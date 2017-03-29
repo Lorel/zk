@@ -2,44 +2,43 @@
 
 Modern computing infrastructures consist of very large clusters of commodity servers.
 Inside a cluster, failures are norm.
-For instance, Google [reports]( http://www.cnet.com/news/google-spotlights-data-center-inner-workings) that "in each cluster’s first year, it’s typical that 1,000 individual machine failures will occur".
+For instance, Google [reports](http://www.cnet.com/news/google-spotlights-data-center-inner-workings) that "in each cluster’s first year, it’s typical that 1,000 individual machine failures will occur".
 To ensure high-availability of services under such circumstances, it is necessary to take actions, in particular to mask/hide/tolerate the failures of nodes in the most transparant manner.
 A common approach toward to tackle these challenges is to implement redundancy and appropriate failure-handling mechanisms.
 
 In this second mini-project, we will implement fault-tolerance techniques in a distributed setting.
-Your objective is to build a *dependable master/worker architecture* that execute *tasks* dispatched by *clients*.
+Your objective is to build a *dependable master/worker architecture* that executes *tasks* dispatched by *clients*.
 To this end, you will leverage [Apache ZooKeeper](zookeeper.apache.org), a scalable and fault-tolerant coordination service at the core of the [Hadoop](http://hadoop.apache.org/) stack.
 
-In the following, you will start a VM on OpenNebula and verify that the  ZooKeeper service is up&running.
+In the following, you will start few instances of the **ZooKeeper** service using its [Docker image](https://hub.docker.com/_/zookeeper/) and *docker-compose*.
+
 Then, we introduce zk-shell, a convenient tool to use interactively ZooKeeper as well as Kazoo, a powerful Python library to drive ZooKeeper.
 Further, we present the leader election building block to implement.
-Finally, we describe the core of this project, e.g. the master/worker architecture. 
+Finally, we describe the core of this project, e.g. the master/worker architecture.
 
-Fork this repository to start the assignment.   
+Fork this repository to start the assignment.
 
 You need to complete all the  items marked by **[EXERCISE]**.
 
-##0 - Pre-requisites
-Some knowledge of the Python programming language. 
+
+## 0 - Pre-requisites
+You must have installed *Docker* and *docker-compose* (see tutorial 2 if needed).
+
+Some knowledge of the Python programming language.
 There are plenty of very good tutorials online, and you should be able to learn the basics very quickly.
 A good tutorial is [here](http://www.learnpython.org/en/).
-We rely on Python 2.7, the most recent version of the 2.x series. 
-The provided VM (see below) comes with Python pre-installed.
+We rely on Python 2.7, the most recent version of the 2.x series.
 
-##1.1 - ZooKeeper 
 
-We provide a ready-to-use template with ZooKeeper configured in standalone mode. 
+## 1.1 - ZooKeeper
 
-**[EXERCISE]** Instantiate the VM template *ZooKeeper-Ubuntu-14.04* on OpenNebula to have your own ZooKeeper service.
-Verify that you can correcly SSH into the VM. 
-
-**[EXERCISE]** Upon bootstrap, verify that the zookeeper service is up&running:
+**[EXERCISE]** Instantiate 3 instances of ZooKeeper on Docker using the [`docker-compose.yml` file](https://github.com/31z4/zookeeper-docker#-via-docker-compose)) from the documentation:
 ```bash
-ubuntu@ubuntu:~⟫ service zookeeper status
-zookeeper start/running, process 26358
-````
+$ docker-compose up -d
+```
 
-##1.2 - ZK-Shell
+
+## 1.2 - ZK-Shell
 
 A common tool to inspect ZooKeeper is *zk-shell*, an interactive command line interpreter.
 This interpreter is available via the [following](https://github.com/rgs1/zk_shell) repository on GitHub.
@@ -49,10 +48,11 @@ You can follow the indication given in *README.md* to install it with *pip*.
 
 Hint: follow the examples given [here](https://github.com/rgs1/zk_shell#usage).
 
-ZK-Shell is a useful tool to debug and interactig live with a running ZooKeeper service. 
+ZK-Shell is a useful tool to debug and interactig live with a running ZooKeeper service.
 However, to implement more complex scenarios and algorithms, we will rely on the Kazoo's Pythong bindings, as described next.
 
-##1.3 - Kazoo
+
+## 1.3 - Kazoo
 
 We use [kazoo](http://kazoo.readthedocs.org/en/latest/index.html), a Python library for interacting with ZooKeeper.
 Kazoo offers a convenient API to perform CRUD operatins (create, read, update and delete), some complex 'ZooKeeper recipes', e.g., barrier, locks, and [watchers](http://kazoo.readthedocs.org/en/latest/api/recipe/watchers.html).
@@ -65,7 +65,7 @@ Read the documentation carefully.
 **[EXERCISE]** Try the *kazoo_example.py* on your VM.
 
 
-##2 - Leader Election
+## 2 - Leader Election
 
 In distributed computing, electing a leader is a classical way to *cooordinate* a set of processes.
 When the leader fails, the system starts a new round of election until a leader is elected.
@@ -83,7 +83,8 @@ A recipe in pseudo-code using these building blocks is available [online](http:/
 
 **[EXERCISE]** Send SIGTERM to some of the running *election.py* instances. Ensure your code is correct, i.e., *(i)* at most one leader is elected, and *(ii)* eventually, a running process is elected. Hint: check an example on signal handling in Python [here](https://docs.python.org/2/library/signal.html#example).
 
-##3 - Master/Worker Architecture
+
+## 3 - Master/Worker Architecture
 
 The core service that needs to be implemented in this project consists in the construction of a dependable task processing service.
 This service is realized by mean of a master/worker architecture.
@@ -92,16 +93,15 @@ One or more clients connected to the ZooKeeper service and submit tasks.
 The master assign tasks to the workers.
 The workers process its tasks.
 
-The system must handle and take care of the different faults scenarios that can happen: failure of a master, failure of a worker (before or while it is executing a task), failure of clients before its tasks completed. 
+The system must handle and take care of the different faults scenarios that can happen: failure of a master, failure of a worker (before or while it is executing a task), failure of clients before its tasks completed.
 
 For example, in the case of a the master node failure, a secondary master (the backup) is elected to replace it, while keeping the task processing service available for all the clients.
 An overview of the master/worker architecture is given below.
 
-<p align="center">
-<img src="https://github.com/vschiavoni/ccs16-zk/blob/master/architecture.png" width="600">
-</p>
+![Architecture](architecture.png)
 
-##3.1 Master/Worker components
+
+## 3.1 Master/Worker components
 
 In our implementation of the master/worker architecture, we use ZooKeeper for all the communications
 between clients, workers, the master and its backup(s).
@@ -131,7 +131,7 @@ A worker should:
 A client should:
 
 1. Compute a new task **xxx**
-2. Submit **xxx** and its data, in respectively in **/data** and **/tasks** 
+2. Submit **xxx** and its data, in respectively in **/data** and **/tasks**
 3. Watch for **xxx** completion
 4. Clean-up **xxx** metadata
 5. Fetch the result
@@ -142,13 +142,14 @@ To facilitate the implementation of the above architecture, we provide in the Gi
 In more details, *client.py*, *worker.py* and *master.py* contain respectively the skeletons for the client, the worker and the master.
 The file *utils.py* includes a simple task definition, functions to initializes the connection to ZooKeeper and stop it upon the reception of a SIGTERM signal.
 
-**[EXERCISE]** Complete the code of *client.py* to submit a task. Test the correctness of your implementation by listing the content of the ZK tree with zk-shell, and emulating the completion of the task. 
+**[EXERCISE]** Complete the code of *client.py* to submit a task. Test the correctness of your implementation by listing the content of the ZK tree with zk-shell, and emulating the completion of the task.
 
 **[EXERCISE]** Complete the code of *worker.py* that retrieve a task assignment and execute it by calling *utils.task*. Again, you may test your code by running a client and a worker, then simulate the assignment of the task to the worker with zk-shell.
 
 **[EXERCISE]** Finish the implementation of *master.py* and test the correctness of your work.
 
-##3.2 Fault-Tolerance
+
+## 3.2 Fault-Tolerance
 
 The architecture must be resilient to different fault scenarios.
 Let us denote **C/W/M** the respective number of clients, workers and master in a scenario.
@@ -157,7 +158,7 @@ Your implementation should work correctly in all following scenarios:
 
 1. **(1/1/1)** a worker or a client fails;
 2. **(1/2/1)** a worker fails;
-3. **(2/2/1)** workers compete in executing the tasks submitted by the clients; and 
+3. **(2/2/1)** workers compete in executing the tasks submitted by the clients; and
 4. **(2/2/2)** the back-up resumes the job of the master upon a failure.
 
 **[EXERCISE]** Provide evidences that your implementation works correctly in the 4 mentioned scenarios. You can provide logs and detailed explanations, use tables, etc. Discuss with the both assistants to decide upon your plan of action.
@@ -165,22 +166,22 @@ Your implementation should work correctly in all following scenarios:
 **[EXERCISE]** Consider scenario 4 and assume that the master lags (e.g., due to a long garbage-collection cycle) instead of crashing.
 
 
-##3.3 ZooKeeper in Cluster Mode
+## 3.3 ZooKeeper in Cluster Mode
 The given VM setups ZooKeeper in standalone mode, that is with one single ZooKeeper server.
 In this last section, you must configure a ZooKeeper cluster with 3 servers, each one running on a separate VM.
 Follow the official instructions [here](https://zookeeper.apache.org/doc/trunk/zookeeperAdmin.html#sc_zkMulitServerSetup).
 
 Once the cluster of ZooKeeer servers is functional, you should test your master/worker system on this deployment.
 
-**[EXERCISE]** What differences do you observe ? 
+**[EXERCISE]** What differences do you observe ?
 
-**[EXERCISE]** Let one of the ZooKeeper server fail: how your system react in this scenario ? 
+**[EXERCISE]** Let one of the ZooKeeper server fail: how your system react in this scenario ?
 
 
 ## How to deliver your solutions
 You should produce a report and commit it to your GitHub private repository.
-The report can be in text (optionally with Markdown syntax, or plain text) or pdf format. 
-it should be between 5000 and 15000 signs. 
+The report can be in text (optionally with Markdown syntax, or plain text) or pdf format.
+it should be between 5000 and 15000 signs.
 You should create a directory `report/` in your repository and save a file `report/report.txt` or `report/report.pdf`.
 
-Deadline to deliver your solutions (source code and report): Friday 6th of May 2016, 17h00 CET.  
+Deadline to deliver your solutions (source code and report): TBD.  
