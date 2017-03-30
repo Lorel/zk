@@ -1,4 +1,4 @@
-# Cloud Computing Systems 2016 - ZooKeeper
+# Cloud Computing Systems 2017 - ZooKeeper
 
 Modern computing infrastructures consist of very large clusters of commodity servers.
 Inside a cluster, failures are norm.
@@ -48,7 +48,7 @@ You can follow the indication given in *README.md* to install it with *pip*.
 
 Hint: follow the examples given [here](https://github.com/rgs1/zk_shell#usage).
 
-ZK-Shell is a useful tool to debug and interactig live with a running ZooKeeper service.
+ZK-Shell is a useful tool to debug and interacting live with a running ZooKeeper service.
 However, to implement more complex scenarios and algorithms, we will rely on the Kazoo's Pythong bindings, as described next.
 
 
@@ -93,7 +93,7 @@ One or more clients connected to the ZooKeeper service and submit tasks.
 The master assign tasks to the workers.
 The workers process its tasks.
 
-The system must handle and take care of the different faults scenarios that can happen: failure of a master, failure of a worker (before or while it is executing a task), failure of clients before its tasks completed.
+The system must handle and take care of the different faults scenarios that can happen: failure of a master, failure of a worker (before or while it is executing a task), failure of clients before its tasks completes.
 
 For example, in the case of a the master node failure, a secondary master (the backup) is elected to replace it, while keeping the task processing service available for all the clients.
 An overview of the master/worker architecture is given below.
@@ -175,13 +175,13 @@ Once the cluster of ZooKeeer servers is functional, you should test your master/
 
 **[EXERCISE]** What differences do you observe ?
 
-**[EXERCISE]** Let one of the ZooKeeper server fail: how your system react in this scenario ?
+**[EXERCISE]** Let one of the ZooKeeper server fail: how does your system react in this scenario ?
 
 
 ## How to deliver your solutions
 You should produce a report and commit it to your GitHub private repository.
 The report can be in text (optionally with Markdown syntax, or plain text) or pdf format.
 it should be between 5000 and 15000 signs.
-You should create a directory `report/` in your repository and save a file `report/report.txt` or `report/report.pdf`.
+You should create a directory `report/` in your repository and save a file `report/report.txt` or `report/report.pdf` or `report/README.md` (we have a preference for the last one, using Markdown).
 
-Deadline to deliver your solutions (source code and report): TBD.  
+Deadline to deliver your solutions (source code and report): Wednesday 17th of May 2017, 23h59 CET.
