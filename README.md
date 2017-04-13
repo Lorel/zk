@@ -32,7 +32,7 @@ We rely on Python 2.7, the most recent version of the 2.x series.
 
 ## 1.1 - ZooKeeper
 
-**[EXERCISE]** Instantiate 3 instances of ZooKeeper on Docker using the [`docker-compose.yml` file](https://github.com/31z4/zookeeper-docker#-via-docker-compose)) from the documentation:
+**[EXERCISE]** Instantiate 3 instances of ZooKeeper on Docker using the [`docker-compose.yml` file](https://github.com/31z4/zookeeper-docker#-via-docker-compose) from the documentation:
 ```bash
 $ docker-compose up -d
 ```
